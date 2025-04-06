@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简易图片压缩工具</title>
+    <!-- ===== CSS文件引用开始 ===== -->
+    <!-- 自适应路径引用 -->
+    <link rel="stylesheet" href="css/style.css" id="main-css">
+    <!-- 外部CDN图标库引用 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- ===== CSS文件引用结束 ===== -->
+    
+    <!-- 内联样式备用方案 - 确保基本功能可用 -->
+    <style>
+    /* 基础样式 - 当外部CSS加载失败时使用 */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; background-color: #f5f7fa; color: #333; line-height: 1.6; }
+    .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+    
+    /* 导航栏样式 */
+    .nav {
+        background-color: #2980b9;
+        padding: 10px 0;
+        margin-bottom: 20px;
+    }
+    .nav-container {
+        max-width: 900px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .nav-logo {
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        text-decoration: none;
+    }
+    .nav-links {
+        display: flex;
+    }
+    .nav-link {
+        color: white;
+        text-decoration: none;
+        margin-left: 20px;
+        padding: 5px 10px;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+    }
+    .nav-link:hover, .nav-link.active {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    header { text-align: center; margin-bottom: 30px; }
+    .logo { display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+    .logo h1 { font-size: 28px; color: #2980b9; }
+    .drop-area { border: 3px dashed #3498db; border-radius: 8px; padding: 40px; text-align: center; background-color: #fff; cursor: pointer; margin-bottom: 20px; }
+    .settings { background-color: #fff; border-radius: 8px; padding: 20px; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); }
+    .hidden { display: none; }
+    .button-container { display: flex; justify-content: center; }
+    #compress-btn { width: 50%; background-color: #3498db; color: white; border: none; padding: 12px; border-radius: 5px; font-size: 16px; cursor: pointer; }
+    .results { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); grid-gap: 20px; }
+    footer { text-align: center; margin-top: 30px; color: #888; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <div class="nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">图片压缩工具</a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link active">首页</a>
+                <a href="about.html" class="nav-link">关于我们</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="logo">
+                <svg width="50" height="50" viewBox="0 0 50 50">
+                    <defs>
+                        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#3498db;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#2ecc71;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <circle cx="25" cy="25" r="20" fill="url(#grad)" />
+                    <path d="M18 22 L25 15 L32 22 M25 15 L25 35" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M15 30 L35 30" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" />
+                </svg>
+                <h1>简易图片压缩</h1>
+            </div>
+            <p>无需上传，本地压缩</p>
+        </header>
+
+        <main>
+            <!-- 上传区域 -->
+            <div class="upload-box">
+                <div class="drop-area" id="drop-area">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>点击此区域或拖放图片到这里</p>
+                    <!-- 添加选择图片按钮 -->
+                    <button type="button" id="select-file-btn" class="select-file-btn">选择图片</button>
+                    <input type="file" id="file-input" accept="image/*" multiple style="display:none;">
+                    <div id="preview-container" class="preview-container"></div>
+                </div>
+            </div>
+
+            <!-- 设置区域 -->
+            <div class="settings">
+                <!-- 隐藏的压缩质量选项 -->
+                <div class="setting hidden">
+                    <label>压缩质量:</label>
+                    <input type="range" id="quality" min="0" max="100" value="70">
+                    <span id="quality-value">70%</span>
+                </div>
+                <div class="button-container">
+                    <button id="compress-btn">压缩图片</button>
+                </div>
+            </div>
+
+            <!-- 结果区域 -->
+            <div class="results" id="results">
+                <!-- 这里会动态添加压缩结果 -->
+            </div>
+        </main>
+
+        <footer>
+            <p>© 2023 简易图片压缩工具 | 所有图片在本地处理，不会上传到服务器</p>
+            <p id="debug-info" style="margin-top: 10px; font-size: 12px; color: #aaa;">
+                当前版本：v1.0 | <a href="#" id="show-debug" style="color: #3498db; text-decoration: none;">显示调试信息</a>
+            </p>
+            <div id="debug-console" style="display: none; margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px; text-align: left; font-family: monospace; font-size: 12px; color: #333; max-height: 200px; overflow-y: auto;">
+                <!-- 调试信息将显示在这里 -->
+            </div>
+        </footer>
+    </div>
+
+    <!-- 调试面板脚本 -->
+    <script>
+        document.getElementById('show-debug').addEventListener('click', function(e) {
+            e.preventDefault();
+            const debugConsole = document.getElementById('debug-console');
+            const showDebug = document.getElementById('show-debug');
+            
+            if (debugConsole.style.display === 'none') {
+                debugConsole.style.display = 'block';
+                showDebug.textContent = '隐藏调试信息';
+                
+                // 捕获控制台输出
+                const originalConsole = {
+                    log: console.log,
+                    error: console.error,
+                    warn: console.warn
+                };
+                
+                console.log = function() {
+                    const args = Array.from(arguments);
+                    originalConsole.log.apply(console, args);
+                    appendToDebugConsole('LOG', args);
+                };
+                
+                console.error = function() {
+                    const args = Array.from(arguments);
+                    originalConsole.error.apply(console, args);
+                    appendToDebugConsole('ERROR', args);
+                };
+                
+                console.warn = function() {
+                    const args = Array.from(arguments);
+                    originalConsole.warn.apply(console, args);
+                    appendToDebugConsole('WARN', args);
+                };
+                
+                function appendToDebugConsole(type, args) {
+                    const div = document.createElement('div');
+                    const typeColor = type === 'ERROR' ? '#e74c3c' : (type === 'WARN' ? '#f39c12' : '#2980b9');
+                    
+                    div.innerHTML = `<span style="color: ${typeColor};">[${type}]</span> ${args.map(arg => {
+                        if (typeof arg === 'object') {
+                            try {
+                                return JSON.stringify(arg);
+                            } catch (e) {
+                                return String(arg);
+                            }
+                        }
+                        return String(arg);
+                    }).join(' ')}`;
+                    
+                    document.getElementById('debug-console').appendChild(div);
+                    document.getElementById('debug-console').scrollTop = document.getElementById('debug-console').scrollHeight;
+                }
+                
+                console.log('调试模式已启用');
+            } else {
+                debugConsole.style.display = 'none';
+                showDebug.textContent = '显示调试信息';
+            }
+        });
+    </script>
+
+    <!-- ===== JavaScript文件引用开始 ===== -->
+    <!-- 使用相对路径 -->
+    <script src="js/app.js"></script>
+    <!-- ===== JavaScript文件引用结束 ===== -->
+    
+    <!-- GitHub Pages路径适配脚本 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检测是否在GitHub Pages上运行
+            const isGitHubPages = window.location.hostname.includes('github.io');
+            
+            if (isGitHubPages) {
+                console.log('检测到GitHub Pages环境，正在调整资源路径...');
+                
+                // 获取仓库名作为baseURL
+                const pathSegments = window.location.pathname.split('/');
+                let baseURL = '';
+                
+                // 通常GitHub Pages的路径格式是 /repoName/...
+                if (pathSegments.length > 1) {
+                    baseURL = '/' + pathSegments[1];
+                    console.log('检测到baseURL: ' + baseURL);
+                }
+                
+                // 调整导航链接
+                document.querySelectorAll('.nav-link, .nav-logo').forEach(link => {
+                    const href = link.getAttribute('href');
+                    if (href && !href.startsWith('http') && !href.startsWith('/')) {
+                        const newHref = baseURL + '/' + href;
+                        link.setAttribute('href', newHref);
+                        console.log(`修正链接: ${href} → ${newHref}`);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html> 
