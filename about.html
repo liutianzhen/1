@@ -145,7 +145,7 @@
             
             <h3 style="margin: 20px 0 10px 0;">关于开发者</h3>
             <div class="team-member">
-                <div class="team-member-avatar">刘</div>
+                <img src="img/icon.png" alt="开发者头像" class="team-member-avatar" style="object-fit: cover;">
                 <div>
                     <h4>刘天真</h4>
                     <p>不懂代码的小白</p>
@@ -195,15 +195,29 @@
                     }
                 });
                 
-                // 调整CSS引用
-                document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
-                    const href = link.getAttribute('href');
-                    if (href && href.startsWith('css/')) {
-                        const newHref = baseURL + '/' + href;
-                        link.setAttribute('href', newHref);
-                        console.log(`修正CSS链接: ${href} → ${newHref}`);
-                    }
-                });
+                // 调整CSS和JS引用
+                adjustResourcePaths('link[rel="stylesheet"]', 'href');
+                adjustResourcePaths('script[src]', 'src');
+                
+                function adjustResourcePaths(selector, attrName) {
+                    document.querySelectorAll(selector).forEach(elem => {
+                        const path = elem.getAttribute(attrName);
+                        if (path && !path.startsWith('http') && !path.startsWith('/') && !path.startsWith(baseURL)) {
+                            const newPath = baseURL + '/' + path;
+                            elem.setAttribute(attrName, newPath);
+                            console.log(`修正资源路径: ${path} → ${newPath}`);
+                            
+                            // 为防止原路径加载失败，重新创建元素
+                            if (elem.tagName === 'LINK' || elem.tagName === 'SCRIPT') {
+                                const newElem = document.createElement(elem.tagName);
+                                for (const attr of elem.attributes) {
+                                    newElem.setAttribute(attr.name, attr.value);
+                                }
+                                elem.parentNode.replaceChild(newElem, elem);
+                            }
+                        }
+                    });
+                }
             }
         });
     </script>
